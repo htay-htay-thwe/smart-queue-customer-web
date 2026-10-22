@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Bell, House, MapPinned, Menu, QrCode, Search, Ticket, UserRound } from "lucide-react";
 import { useApp } from "./AppProvider";
@@ -13,6 +14,7 @@ const tabs = [
 ];
 export function AppShell({ children }: { children: React.ReactNode }) {
   const path = usePathname(); const { unread } = useApp(); const chrome = !hidden.has(path);
+  useEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: "instant" }); }, [path]);
   return <div className="site-shell">
     {chrome && <header className="desktop-header"><Link className="brand" href="/"><span>SQ</span><strong>Smart Queue</strong></Link><nav><Link href="/"><Search size={18}/> Discover</Link><Link href="/queues"><Ticket size={18}/> My Queue</Link><Link href="/notifications" className="notification-link"><Bell size={18}/> Alerts{unread > 0 && <b>{unread > 9 ? "9+" : unread}</b>}</Link><Link href="/account"><UserRound size={18}/> Account</Link></nav></header>}
     {chrome && <header className="mobile-header"><Link href="/account" className="mobile-header-button" aria-label="Open account menu"><Menu size={24}/></Link><strong>Smart Queue</strong><Link href="/notifications" className="mobile-header-button notification-button" aria-label="Notifications"><Bell size={24}/>{unread > 0 && <b>{unread > 9 ? "9+" : unread}</b>}</Link></header>}

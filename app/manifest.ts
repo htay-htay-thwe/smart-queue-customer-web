@@ -1,0 +1,2 @@
+import type { MetadataRoute } from "next";
+export default function manifest(): MetadataRoute.Manifest { return { name: "Smart Queue", short_name: "Smart Queue", description: "Join nearby queues without waiting in line.", start_url: "/", display: "standalone", background_color: "#F5FAFB", theme_color: "#1E7A9B", orientation: "portrait", icons: [{ src: "/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "maskable" }] }; }

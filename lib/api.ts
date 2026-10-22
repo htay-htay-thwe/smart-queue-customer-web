@@ -40,6 +40,7 @@ export const finishedStatuses = new Set(["finished", "completed", "cancelled", "
 export const endpoints = {
   shops: () => api("/shops/all"),
   login: (body: { email: string; password: string }) => api("/customers/login", { method: "POST", body, auth: false }),
+  googleAuth: (idToken: string) => api("/customers/google-auth", { method: "POST", body: { idToken }, auth: false }),
   register: (body: { name: string; email: string; password: string }) => api("/customers/register", { method: "POST", body, auth: false }),
   sendEmailOtp: (email: string) => api("/customers/send-email-otp", { method: "POST", body: { email }, auth: false }),
   verifyEmailOtp: (email: string, otp: string) => api("/customers/verify-email-otp", { method: "POST", body: { email, otp }, auth: false }),

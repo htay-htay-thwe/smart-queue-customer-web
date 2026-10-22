@@ -8,7 +8,7 @@ import { endpoints, unwrap } from "@/lib/api";
 type ContextValue = {
   user: User | null; token: string | null; loading: boolean; unread: number;
   login: (email: string, password: string) => Promise<void>; logout: () => void;
-  updateUser: (updates: Partial<User>) => void; refreshUnread: () => Promise<void>;
+  updateUser: (updates: Partial<User>) => void; refreshUnread: () => Promise<void>; setUnreadCount: (count: number) => void;
 };
 const Context = createContext<ContextValue | null>(null);
 
@@ -49,10 +49,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   });
   const refreshUnread = useCallback(async () => {
     if (!token) return;
-    try { const rows = unwrap<any[]>(await endpoints.notifications()); setUnread(Array.isArray(rows) ? rows.filter((n) => !n.isRead).length : 0); } catch { /* optional */ }
+    try { const result = unwrap<{ count?: number }>(await endpoints.unreadNotificationCount()); setUnread(Math.max(0, Number(result?.count ?? 0))); } catch { /* optional */ }
   }, [token]);
+  const setUnreadCount = useCallback((count: number) => setUnread(Math.max(0, count)), []);
   useEffect(() => { if (!token) return; void refreshUnread(); const timer = setInterval(refreshUnread, 15000); return () => clearInterval(timer); }, [refreshUnread, token]);
-  const value = useMemo(() => ({ user, token, loading, unread, login, logout, updateUser, refreshUnread }), [user, token, loading, unread, logout, refreshUnread]);
+  const value = useMemo(() => ({ user, token, loading, unread, login, logout, updateUser, refreshUnread, setUnreadCount }), [user, token, loading, unread, logout, refreshUnread, setUnreadCount]);
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }
 export const useApp = () => { const value = useContext(Context); if (!value) throw new Error("useApp must be inside AppProvider"); return value; };

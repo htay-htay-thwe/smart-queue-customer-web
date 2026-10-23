@@ -2,6 +2,7 @@ export type User = { id: string; name: string; email: string; phoneNumber?: stri
 export type Shop = {
   _id: string; id?: string; name: string; description?: string; shopImg?: string;
   phoneNumber?: string; distance?: number; shopTypes?: { shopTypeName?: string } | string;
+  isQueueOpen?: boolean;
   address?: { fullAddress?: string; location?: { coordinates?: [number, number] } };
   tableTypes?: Array<{ _id: string; type: string; capacity: number }>;
 };

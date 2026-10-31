@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://smart-q-backend-nestjs.onrender.com/api";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://stellarion.studio/api";
 
 type Options = { method?: "GET" | "POST" | "PATCH" | "DELETE"; body?: unknown; auth?: boolean; headers?: HeadersInit };
 

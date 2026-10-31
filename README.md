@@ -29,7 +29,7 @@ Open `http://localhost:3000`. Camera and geolocation require HTTPS in production
 Deploy the folder to Vercel and configure:
 
 ```text
-NEXT_PUBLIC_API_URL=https://smart-q-backend-nestjs.onrender.com/api
+NEXT_PUBLIC_API_URL=https://stellarion.studio/api
 ```
 
 The NestJS backend must allow the production website origin in CORS. On iPhone, open the HTTPS site in Safari and use **Share → Add to Home Screen**.

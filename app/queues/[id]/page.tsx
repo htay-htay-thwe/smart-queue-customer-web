@@ -79,12 +79,6 @@ export default function LiveQueuePage({ params }: { params: Promise<{ id: string
   const canScan = ["ready", "ready-to-seat", "ready to seat"].includes(status);
   const seating = typeof queue.table_type_id === "object" ? queue.table_type_id.type : "General queue";
   const wait = Math.max(0, Number(queue.estimated_wait_time) || 0);
-  const waitingAhead = shopQueues.filter((item) =>
-    statusOf(item) === "waiting" &&
-    String(item.table_type_id && typeof item.table_type_id === "object" ? item.table_type_id._id : item.table_type_id) ===
-      String(queue.table_type_id && typeof queue.table_type_id === "object" ? queue.table_type_id._id : queue.table_type_id) &&
-    new Date(item.createdAt || 0).getTime() < new Date(queue.createdAt || 0).getTime(),
-  ).length;
   const latestSeated = shopQueues
     .filter((item) => statusOf(item) === "seated")
     .sort((a, b) => new Date(b.updatedAt || b.createdAt || 0).getTime() - new Date(a.updatedAt || a.createdAt || 0).getTime())[0];
@@ -109,7 +103,7 @@ export default function LiveQueuePage({ params }: { params: Promise<{ id: string
       <div className="live-orbit"><span>Your number</span><strong>#{queue.queue_number ?? "—"}</strong><small>{ended ? "Queue closed" : status === "waiting" ? "Please stay nearby" : copy.title}</small></div>
       <div className="live-metrics">
         <article><Clock3/><div><small>{status === "waiting" ? "ESTIMATED WAIT" : "CURRENT STATUS"}</small><strong>{status === "waiting" ? `~${wait} min` : copy.title}</strong></div></article>
-        <article><Users/><div><small>PEOPLE IN FRONT</small><strong>{status === "waiting" ? waitingAhead : 0}</strong></div></article>
+        <article><Users/><div><small>PEOPLE WAITING</small><strong>{displayedWaitingCount}</strong></div></article>
         <article><Users/><div><small>SEATING</small><strong>{seating || "General queue"}</strong></div></article>
       </div>
     </section>

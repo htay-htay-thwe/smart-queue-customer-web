@@ -41,7 +41,13 @@ export default function LiveQueuePage({ params }: { params: Promise<{ id: string
       const current = unwrap<Queue>(await endpoints.queue(id));
       setQueue(current);
       const shopId = typeof current.shop_id === "object" ? current.shop_id?._id : current.shop_id;
-      if (shopId) setShopQueues(list<Queue>(await endpoints.shopQueues(String(shopId))));
+      if (shopId) {
+        const [active, history] = await Promise.all([
+          endpoints.shopQueues(String(shopId)),
+          endpoints.shopQueueHistory(String(shopId)).catch(() => []),
+        ]);
+        setShopQueues([...list<Queue>(active), ...list<Queue>(history)]);
+      }
       setError("");
       setLastUpdated(new Date());
       setSeconds(15);
@@ -76,6 +82,7 @@ export default function LiveQueuePage({ params }: { params: Promise<{ id: string
   const latestSeated = shopQueues
     .filter((item) => statusOf(item) === "seated")
     .sort((a, b) => new Date(b.updatedAt || b.createdAt || 0).getTime() - new Date(a.updatedAt || a.createdAt || 0).getTime())[0];
+  const waitingCount = shopQueues.filter((item) => statusOf(item) === "waiting").length;
 
   return <div className="narrow live-page">
     <div className="live-titlebar">
@@ -101,6 +108,7 @@ export default function LiveQueuePage({ params }: { params: Promise<{ id: string
     </section>
 
     {latestSeated && <section className="live-alert checked"><span><Check/></span><div><strong>Now serving</strong><p>Queue #{latestSeated.queue_number ?? "—"} is seated.</p></div></section>}
+    <section className="live-alert waiting"><span><Users/></span><div><strong>People waiting</strong><p>{waitingCount} {waitingCount === 1 ? "person" : "people"} currently waiting.</p></div></section>
 
     {!ended && <section className="live-progress-card">
       <div className="live-section-heading"><div><strong>Queue progress</strong><small>Updates automatically</small></div><b>{Math.round((stage / 4) * 100)}%</b></div>

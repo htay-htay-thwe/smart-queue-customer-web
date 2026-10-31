@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { use, useCallback, useEffect, useState } from "react";
 import { ArrowLeft, BellRing, CalendarClock, Check, Clock3, MapPin, QrCode, RefreshCw, Store, Users } from "lucide-react";
-import { endpoints, statusOf, unwrap } from "@/lib/api";
+import { endpoints, list, statusOf, unwrap } from "@/lib/api";
 import type { Queue } from "@/lib/types";
 import { ErrorNotice, Loading } from "@/components/UI";
 
@@ -28,6 +28,7 @@ function statusCopy(status: string) {
 export default function LiveQueuePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [queue, setQueue] = useState<Queue | null>(null);
+  const [shopQueues, setShopQueues] = useState<Queue[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
@@ -37,7 +38,10 @@ export default function LiveQueuePage({ params }: { params: Promise<{ id: string
   const load = useCallback(async (manual = false) => {
     if (manual) setRefreshing(true);
     try {
-      setQueue(unwrap<Queue>(await endpoints.queue(id)));
+      const current = unwrap<Queue>(await endpoints.queue(id));
+      setQueue(current);
+      const shopId = typeof current.shop_id === "object" ? current.shop_id?._id : current.shop_id;
+      if (shopId) setShopQueues(list<Queue>(await endpoints.shopQueues(String(shopId))));
       setError("");
       setLastUpdated(new Date());
       setSeconds(15);
@@ -63,6 +67,15 @@ export default function LiveQueuePage({ params }: { params: Promise<{ id: string
   const canScan = ["ready", "ready-to-seat", "ready to seat"].includes(status);
   const seating = typeof queue.table_type_id === "object" ? queue.table_type_id.type : "General queue";
   const wait = Math.max(0, Number(queue.estimated_wait_time) || 0);
+  const waitingAhead = shopQueues.filter((item) =>
+    statusOf(item) === "waiting" &&
+    String(item.table_type_id && typeof item.table_type_id === "object" ? item.table_type_id._id : item.table_type_id) ===
+      String(queue.table_type_id && typeof queue.table_type_id === "object" ? queue.table_type_id._id : queue.table_type_id) &&
+    new Date(item.createdAt || 0).getTime() < new Date(queue.createdAt || 0).getTime(),
+  ).length;
+  const latestSeated = shopQueues
+    .filter((item) => statusOf(item) === "seated")
+    .sort((a, b) => new Date(b.updatedAt || b.createdAt || 0).getTime() - new Date(a.updatedAt || a.createdAt || 0).getTime())[0];
 
   return <div className="narrow live-page">
     <div className="live-titlebar">
@@ -82,9 +95,12 @@ export default function LiveQueuePage({ params }: { params: Promise<{ id: string
       <div className="live-orbit"><span>Your number</span><strong>#{queue.queue_number ?? "—"}</strong><small>{ended ? "Queue closed" : status === "waiting" ? "Please stay nearby" : copy.title}</small></div>
       <div className="live-metrics">
         <article><Clock3/><div><small>{status === "waiting" ? "ESTIMATED WAIT" : "CURRENT STATUS"}</small><strong>{status === "waiting" ? `~${wait} min` : copy.title}</strong></div></article>
+        <article><Users/><div><small>PEOPLE IN FRONT</small><strong>{status === "waiting" ? waitingAhead : 0}</strong></div></article>
         <article><Users/><div><small>SEATING</small><strong>{seating || "General queue"}</strong></div></article>
       </div>
     </section>
+
+    {latestSeated && <section className="live-alert checked"><span><Check/></span><div><strong>Now serving</strong><p>Queue #{latestSeated.queue_number ?? "—"} is seated.</p></div></section>}
 
     {!ended && <section className="live-progress-card">
       <div className="live-section-heading"><div><strong>Queue progress</strong><small>Updates automatically</small></div><b>{Math.round((stage / 4) * 100)}%</b></div>

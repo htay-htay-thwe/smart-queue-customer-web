@@ -45,6 +45,8 @@ export const endpoints = {
   sendEmailOtp: (email: string) => api("/customers/send-email-otp", { method: "POST", body: { email }, auth: false }),
   verifyEmailOtp: (email: string, otp: string) => api("/customers/verify-email-otp", { method: "POST", body: { email, otp }, auth: false }),
   customerQueues: (id: string) => api(`/queues/customer/${encodeURIComponent(id)}?t=${Date.now()}`),
+  shopQueues: (id: string) => api(`/queues/shop/${encodeURIComponent(id)}?t=${Date.now()}`),
+  tableStatus: (id: string) => api(`/queues/get-table-status/${encodeURIComponent(id)}?t=${Date.now()}`),
   queueHistory: (id: string) => api(`/queues/getQueue-history/customer/${encodeURIComponent(id)}?t=${Date.now()}`),
   queue: (id: string) => api(`/queues/${encodeURIComponent(id)}`),
   joinQueue: (body: any) => api("/queues/create", { method: "POST", body }),

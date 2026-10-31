@@ -14,7 +14,7 @@ export function ShopCard({ shop, distance, allowed = true }: { shop: Shop; dista
   const canJoin = allowed && queueOpen;
   return <Link href={canJoin ? `/shops/${shop._id || shop.id}` : "#"} aria-disabled={!canJoin} className={`shop-card ${canJoin ? "" : "disabled"}`} onClick={(e) => !canJoin && e.preventDefault()}>
     <div className="shop-image">{shop.shopImg ? <img src={shop.shopImg} alt=""/> : <span>{shop.name?.charAt(0)}</span>}<b className={canJoin ? "open" : "far"}><MapPin size={13}/>{!queueOpen ? "Queue closed" : allowed ? `${distance != null && distance < 1 ? Math.round(distance * 1000) + " m" : distance?.toFixed(1) + " km"} away` : distance == null ? "Location unavailable" : `${distance.toFixed(1)} km`}</b></div>
-    <div className="shop-body"><div className="shop-title"><div><h3>{shop.name}</h3><p>{type || "Restaurant"}</p></div><span className="wait-box"><strong>{(shop as any).activeQueueCount ?? 0}</strong><small>waiting</small></span></div>
+    <div className="shop-body"><div className="shop-title"><div><h3>{shop.name}</h3><p>{type || "Restaurant"}</p></div><span className="wait-box"><strong>{(shop as any).activeQueueCount ?? 0}</strong><small>people waiting</small></span></div>
     <p className="shop-description">{shop.description || shop.address?.fullAddress || "Restaurant"}</p>
     <div className="shop-action"><span className={canJoin ? "available" : "unavailable"}>{!queueOpen ? "ⓘ This shop paused new queues" : allowed ? "✓ Available to join now" : distance == null ? "ⓘ Enable location to join" : "ⓘ Outside the 1 km service area"}</span><strong>{canJoin ? "Join queue" : queueOpen ? "Unavailable" : "Closed"}</strong></div></div>
   </Link>;

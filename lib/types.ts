@@ -10,6 +10,7 @@ export type Queue = {
   _id: string; id?: string; queue_number?: number; status?: string; estimated_wait_time?: number;
   createdAt?: string; updatedAt?: string; readyAt?: string; noShowDeadline?: string;
   table_type_id?: { _id?: string; type?: string } | string; table_no?: string | number;
+  estimated_wait_min?: number; estimated_wait_max?: number;
   shop_id?: Shop | string; shop?: Shop; userRequirements?: string; queue_qr?: string;
 };
 export type AppNotification = { _id: string; title: string; message: string; type: string; isRead: boolean; createdAt: string; queue_id?: string | { _id: string } };

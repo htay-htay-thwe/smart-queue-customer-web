@@ -42,9 +42,26 @@ export default function NotificationsPage() {
     catch (e: any) { setItems(previous); setUnreadCount(previous.filter(item => !item.isRead).length); setError(e.message); }
     finally { setWorking(""); }
   };
+  const removeAll = async () => {
+    if (!items.length || working) return;
+    if (!window.confirm("Clear all notifications?")) return;
+    setWorking("all-delete"); setError(""); setMessage("");
+    const previous = items;
+    setItems([]);
+    setUnreadCount(0);
+    try {
+      await endpoints.deleteAllNotifications();
+      await refreshUnread();
+      setMessage("All notifications cleared.");
+    } catch (e: any) {
+      setItems(previous);
+      setUnreadCount(previous.filter(item => !item.isRead).length);
+      setError(e.message);
+    } finally { setWorking(""); }
+  };
   if (!token) return <div className="narrow"><PageHeader title="Notifications"/><Empty icon={<Bell size={42}/>} title="Sign in for live alerts" text="Queue updates will appear here." action={<Link href="/login" className="button">Sign in</Link>}/></div>;
   return <div className="narrow notification-page"><PageHeader title="Notifications" subtitle="Queue updates and important alerts."/>
-    <div className="notification-toolbar"><div className="notification-tabs"><button className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>All ({items.length})</button><button className={filter === "unread" ? "active" : ""} onClick={() => setFilter("unread")}>Unread ({items.filter(item => !item.isRead).length})</button></div><button className="button secondary" disabled={!unread || !!working} onClick={markAll}>{working === "all" ? <LoaderCircle className="spin" size={17}/> : <CheckCheck size={17}/>} {unread ? "Mark all read" : "All read"}</button></div>
+    <div className="notification-toolbar"><div className="notification-tabs"><button className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>All ({items.length})</button><button className={filter === "unread" ? "active" : ""} onClick={() => setFilter("unread")}>Unread ({items.filter(item => !item.isRead).length})</button></div><div className="notification-actions"><button className="button secondary" disabled={!unread || !!working} onClick={markAll}>{working === "all" ? <LoaderCircle className="spin" size={17}/> : <CheckCheck size={17}/>} {unread ? "Mark all read" : "All read"}</button><button className="button secondary" disabled={!items.length || !!working} onClick={() => void removeAll}>{working === "all-delete" ? <LoaderCircle className="spin" size={17}/> : <Trash2 size={17}/>} Clear all</button></div></div>
     {error && <ErrorNotice message={error}/>} {message && <div className="notice success" style={{marginBottom:12}}>{message}</div>}
     {loading ? <Loading/> : visible.length ? <div className="stack">{visible.map(notification => <article key={notification._id} className={`notification-card ${notification.isRead ? "" : "unread"}`} onClick={() => void markOne(notification)}><span className={notification.isRead ? "" : "notification-dot"}/><div><h3>{notification.title}</h3><p>{notification.message}</p><time>{new Date(notification.createdAt).toLocaleString()}</time></div><button className="icon-button" disabled={working === notification._id} aria-label="Delete notification" onClick={event => { event.stopPropagation(); void remove(notification._id); }}>{working === notification._id ? <LoaderCircle className="spin" size={17}/> : <Trash2 size={17}/>}</button></article>)}</div> : <Empty icon={<Bell size={42}/>} title={filter === "unread" ? "No unread notifications" : "You’re all caught up"} text={filter === "unread" ? "Read notifications remain available under All.":"New queue alerts will appear here automatically."}/>} {/* notification list */}
   </div>;
